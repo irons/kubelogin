@@ -37,6 +37,8 @@ func (cmd *Cmd) Run(ctx context.Context, args []string, version string) int {
 		cmd.Logger.Logf("Error: too many arguments")
 		return 1
 	}
+	cmd.Logger.SetDebugLevel(adaptors.DebugLevel(o.Verbose))
+	cmd.Logger.Debugf(1, "WARNING: Log may contain your secrets, e.g. token or password")
 	kubeConfig, err := o.ExpandKubeConfig()
 	if err != nil {
 		cmd.Logger.Logf("Error: invalid option: %s", err)
@@ -61,6 +63,7 @@ type cmdOptions struct {
 	ListenPort      int    `long:"listen-port" default:"8000" env:"KUBELOGIN_LISTEN_PORT" description:"Port used by kubelogin to bind its webserver"`
 	SkipTLSVerify   bool   `long:"insecure-skip-tls-verify" env:"KUBELOGIN_INSECURE_SKIP_TLS_VERIFY" description:"If set, the server's certificate will not be checked for validity. This will make your HTTPS connections insecure"`
 	SkipOpenBrowser bool   `long:"skip-open-browser" env:"KUBELOGIN_SKIP_OPEN_BROWSER" description:"If set, it does not open the browser on authentication."`
+	Verbose         int    `long:"v" short:"v" default:"0" description:"Set 1 or more to show debug logs"`
 }
 
 // ExpandKubeConfig returns an expanded KubeConfig path.

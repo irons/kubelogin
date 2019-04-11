@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
+	"github.com/int128/kubelogin/adaptors/mock_adaptors"
 	"github.com/int128/kubelogin/usecases/interfaces"
 	"github.com/int128/kubelogin/usecases/mock_usecases"
 	"github.com/mitchellh/go-homedir"
@@ -28,7 +29,7 @@ func TestCmd_Run(t *testing.T) {
 
 		cmd := Cmd{
 			Login:  login,
-			Logger: t,
+			Logger: mock_adaptors.NewLogger(t),
 		}
 		exitCode := cmd.Run(ctx, []string{executable}, version)
 		if exitCode != 0 {
@@ -52,7 +53,7 @@ func TestCmd_Run(t *testing.T) {
 
 		cmd := Cmd{
 			Login:  login,
-			Logger: t,
+			Logger: mock_adaptors.NewLogger(t),
 		}
 		exitCode := cmd.Run(ctx, []string{executable,
 			"--listen-port", "10080",
@@ -69,7 +70,7 @@ func TestCmd_Run(t *testing.T) {
 		defer ctrl.Finish()
 		cmd := Cmd{
 			Login:  mock_usecases.NewMockLogin(ctrl),
-			Logger: t,
+			Logger: mock_adaptors.NewLogger(t),
 		}
 		exitCode := cmd.Run(context.TODO(), []string{executable, "some"}, version)
 		if exitCode != 1 {

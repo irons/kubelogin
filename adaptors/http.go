@@ -6,16 +6,21 @@ import (
 	"encoding/base64"
 	"io/ioutil"
 	"net/http"
+	"net/http/httputil"
 
 	"github.com/int128/kubelogin/adaptors/interfaces"
 	"github.com/pkg/errors"
+	"go.uber.org/dig"
 )
 
-func NewHTTP() adaptors.HTTP {
-	return &HTTP{}
+func NewHTTP(i HTTP) adaptors.HTTP {
+	return &i
 }
 
-type HTTP struct{}
+type HTTP struct {
+	dig.In
+	Logger adaptors.Logger
+}
 
 func (*HTTP) NewClientConfig() adaptors.HTTPClientConfig {
 	return &httpClientConfig{
@@ -23,13 +28,50 @@ func (*HTTP) NewClientConfig() adaptors.HTTPClientConfig {
 	}
 }
 
-func (*HTTP) NewClient(config adaptors.HTTPClientConfig) (*http.Client, error) {
+func (h *HTTP) NewClient(config adaptors.HTTPClientConfig) (*http.Client, error) {
 	return &http.Client{
-		Transport: &http.Transport{
-			TLSClientConfig: config.TLSConfig(),
-			Proxy:           http.ProxyFromEnvironment,
+		Transport: &loggingTransport{
+			base: &http.Transport{
+				TLSClientConfig: config.TLSConfig(),
+				Proxy:           http.ProxyFromEnvironment,
+			},
+			logger: h.Logger,
 		},
 	}, nil
+}
+
+type loggingTransport struct {
+	base   http.RoundTripper
+	logger adaptors.Logger
+}
+
+func (t *loggingTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	const level = 2
+	if t.logger.GetDebugLevel() < level {
+		return t.base.RoundTrip(req)
+	}
+	var dumpBody bool
+	if t.logger.GetDebugLevel() > level {
+		dumpBody = true
+	}
+
+	reqDump, err := httputil.DumpRequestOut(req, dumpBody)
+	if err != nil {
+		t.logger.Debugf(level, "Error: could not dump the request: %s", err)
+		return t.base.RoundTrip(req)
+	}
+	t.logger.Debugf(level, "%s", string(reqDump))
+	resp, err := t.base.RoundTrip(req)
+	if err != nil {
+		return resp, err
+	}
+	respDump, err := httputil.DumpResponse(resp, dumpBody)
+	if err != nil {
+		t.logger.Debugf(level, "Error: could not dump the response: %s", err)
+		return resp, err
+	}
+	t.logger.Debugf(level, "%s", string(respDump))
+	return resp, err
 }
 
 type httpClientConfig struct {

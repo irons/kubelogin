@@ -39,13 +39,14 @@ type OIDC interface {
 }
 
 type OIDCAuthenticateIn struct {
-	Issuer          string
-	ClientID        string
-	ClientSecret    string
-	ExtraScopes     []string     // Additional scopes
-	Client          *http.Client // HTTP client for oidc and oauth2
-	LocalServerPort int          // HTTP server port
-	SkipOpenBrowser bool         // skip opening browser if true
+	Issuer             string
+	ClientID           string
+	ClientSecret       string
+	ExtraScopes        []string     // Additional scopes
+	Client             *http.Client // HTTP client for oidc and oauth2
+	LocalServerPort    int          // HTTP server port
+	SkipOpenBrowser    bool         // skip opening browser if true
+	ShowLocalServerURL func(url string)
 }
 
 type OIDCAuthenticateOut struct {
@@ -63,4 +64,16 @@ type OIDCVerifyTokenIn struct {
 
 type Logger interface {
 	Logf(format string, v ...interface{})
+	Debugf(level DebugLevel, format string, v ...interface{})
+	SetDebugLevel(level DebugLevel)
+	GetDebugLevel() DebugLevel
 }
+
+// DebugLevel represents a log level.
+//
+// 0: None
+// 1: Including in/out
+// 2: Including transport headers
+// 3: Including transport body
+//
+type DebugLevel int

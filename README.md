@@ -68,6 +68,7 @@ Application Options:
       --insecure-skip-tls-verify  If set, the server's certificate will not be checked for validity. This will make your HTTPS connections insecure
                                   [$KUBELOGIN_INSECURE_SKIP_TLS_VERIFY]
       --skip-open-browser         If set, it does not open the browser on authentication. [$KUBELOGIN_SKIP_OPEN_BROWSER]
+  -v, --v=                        Set 1 or more to show debug logs (default: 0)
 
 Help Options:
   -h, --help        Show this help message

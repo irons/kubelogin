@@ -10,6 +10,7 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/int128/kubelogin/adaptors/interfaces"
+	"github.com/int128/kubelogin/adaptors/mock_adaptors"
 	"github.com/int128/kubelogin/adaptors_test/authserver"
 	"github.com/int128/kubelogin/adaptors_test/keys"
 	"github.com/int128/kubelogin/adaptors_test/kubeconfig"
@@ -184,7 +185,9 @@ func newIDToken(t *testing.T, issuer string) string {
 
 func runCmd(t *testing.T, ctx context.Context, args ...string) {
 	t.Helper()
-	newLogger := func() adaptors.Logger { return t }
+	newLogger := func() adaptors.Logger {
+		return mock_adaptors.NewLogger(t)
+	}
 	if err := di.InvokeWithExtra(func(cmd adaptors.Cmd) {
 		exitCode := cmd.Run(ctx, append([]string{"kubelogin"}, args...), "HEAD")
 		if exitCode != 0 {

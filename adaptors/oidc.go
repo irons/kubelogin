@@ -31,9 +31,10 @@ func (*OIDC) Authenticate(ctx context.Context, in adaptors.OIDCAuthenticateIn) (
 			ClientSecret: in.ClientSecret,
 			Scopes:       append(in.ExtraScopes, oidc.ScopeOpenID),
 		},
-		LocalServerPort: in.LocalServerPort,
-		SkipOpenBrowser: in.SkipOpenBrowser,
-		AuthCodeOptions: []oauth2.AuthCodeOption{oauth2.AccessTypeOffline},
+		LocalServerPort:    in.LocalServerPort,
+		SkipOpenBrowser:    in.SkipOpenBrowser,
+		AuthCodeOptions:    []oauth2.AuthCodeOption{oauth2.AccessTypeOffline},
+		ShowLocalServerURL: in.ShowLocalServerURL,
 	}
 	token, err := flow.GetToken(ctx)
 	if err != nil {
